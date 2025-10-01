@@ -1,27 +1,38 @@
+# models.py
 from datetime import datetime
 from typing import Optional
-from pydantic import BaseModel, Field, EmailStr, validator
+from pydantic import BaseModel, EmailStr, Field
 
 class SurveySubmission(BaseModel):
-    name: str = Field(..., min_length=1, max_length=100)
+    # Incoming payload from the frontend
+    name: str = Field(max_length=100)
     email: EmailStr
-    age: int = Field(..., ge=13, le=120)
-    consent: bool = Field(..., description="Must be true to accept")
-    rating: int = Field(..., ge=1, le=5)
-    comments: Optional[str] = Field(None, max_length=1000)
-  
+    age: int
+    consent: bool
+    rating: int
+    comments: Optional[str] = None
+    source: Optional[str] = "other"
 
-    @validator("comments")
-    def _strip_comments(cls, v):
-        return v.strip() if isinstance(v, str) else v
+    # NEW (optional): may be provided by frontend or filled from request headers
+    user_agent: Optional[str] = None
 
-    @validator("consent")
-    def _must_consent(cls, v):
-        if v is not True:
-            raise ValueError("consent must be true")
-        return v
-        
-#Good example of inheritance
-class StoredSurveyRecord(SurveySubmission):
+    # NEW (optional): if not provided, server will compute
+    submission_id: Optional[str] = None
+
+
+class StoredSurveyRecord(BaseModel):
+    # What we persist to disk (NO raw PII)
+    submission_id: str
+
+    name: str
+    email_sha256: str
+    age_sha256: str
+
+    consent: bool
+    rating: int
+    comments: Optional[str] = None
+    source: str
+
+    user_agent: Optional[str] = None
     received_at: datetime
     ip: str
