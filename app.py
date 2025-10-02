@@ -72,4 +72,4 @@ def submit_survey():
 
 if __name__ == "__main__":
     # Bind to all interfaces + stable port for your proxy
-    app.run(host="0.0.0.0", port=41845, debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
